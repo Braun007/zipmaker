@@ -22,43 +22,43 @@ def user_message(string):
 def receive_file():
     file_name = input("What's the file's name?: ")
     file_size = os.path.getsize(file_name)
-    subject_name, dot, file_type = file_name.partition('.')
-    return {'file_name': file_name, 'file_size': file_size, 'subject_name': subject_name, 'file_type': file_type}
+    file_name, dot, file_type = file_name.partition('.')
+    return {'file_name': file_name, 'file_size': file_size, 'file_type': file_type}
 
 
-def method_subject_count():
-    user_message(f'\nMax Subjects for this Mass Import: {str(max_subjects)}')
+def method_file_count():
+    user_message(f'\nMax files for this zip: {str(max_files)}')
 
     try:
-        subject_count = int(input('How many subjects do you want?: '))
+        file_count = int(input('How many images do you want?: '))
     except ValueError:
         logging.error('Input was not a number, exiting')
         return
-    if subject_count <= int(max_subjects):
-        return f'Mass Import Subject Count: {str(subject_count)}', subject_count
+    if file_count <= int(max_files):
+        return f'Archive file count: {str(file_count)}', file_count
     else:
-        logging.error('You Have Reach Max Count')
+        logging.error('Max files count reached')
 
 
 def method_zip_size(file_size):
-    user_message(f'Max Mass Import Size: {str((MAX_SIZE / 1000000000))} GB')
+    user_message(f'Zip Size: {str((MAX_SIZE / 1000000000))} GB')
     try:
-        chosen_size = float(input('How large do you want your file to be? (In GB): '))
+        chosen_size = float(input('How large do you want your archive to be? (In GB): '))
     except ValueError:
         logging.error('Input was not a number, exiting')
-    zip_size_subject_count = chosen_size * 1000000000 / file_size
-    if int(zip_size_subject_count) <= int(max_subjects):
-        return f'Mass Import Size: {str(chosen_size)}GB', zip_size_subject_count
+    zip_size_file_count = chosen_size * 1000000000 / file_size
+    if int(zip_size_file_count) <= int(max_files):
+        return f'Archive size: {str(chosen_size)}GB', zip_size_file_count
 
 
-def duplicate_subject(file_to_duplicate, duplicate_subject_count, directory, relative_directory, archive):
+def duplicate_file(file_to_duplicate, duplicate_file_count, directory, relative_directory, archive):
     destination_dir = relative_directory if archive == '1' else directory
-    for subject in range(int(duplicate_subject_count)):
+    for file in range(int(duplicate_file_count)):
         shutil.copy(file_to_duplicate['file_name'],
-                    f'{destination_dir}/{file_to_duplicate["subject_name"]}_{subject}.{file_to_duplicate["file_type"]}')
+                    f'{destination_dir}/{file_to_duplicate["file_name"]}_{file}.{file_to_duplicate["file_type"]}')
         user_message(
-            f'Created {str(subject)} files out of {str(int(duplicate_subject_count))} |'
-            f' {str(int((subject / duplicate_subject_count) * 100))}%')
+            f'Created {str(file)} files out of {str(int(duplicate_file_count))} |'
+            f' {str(int((file / duplicate_file_count) * 100))}%')
 
 
 def create_directory(directory, archive):
@@ -95,17 +95,17 @@ def create_archive(relative_directory_path, archive):
 
 if __name__ == '__main__':
     file = receive_file()
-    max_subjects = int(MAX_SIZE / file['file_size'])
-    method = input('Would you like to: \n(1) Choose Subject Count \nor \n(2) Size in GB\nChoice: ')
-    directory_name, subject_count = method_subject_count() if method == '1' else method_zip_size(file['file_size'])
-    if not directory_name or not subject_count:
+    max_files = int(MAX_SIZE / file['file_size'])
+    method = input('Would you like to: \n(1) Choose File Count \nor \n(2) Size in GB\nChoice: ')
+    directory_name, file_count = method_file_count() if method == '1' else method_zip_size(file['file_size'])
+    if not directory_name or not file_count:
         logging.error('Error, did not get all required data.')
         sys.exit(0)
     archive_type = input('Would you like compress into: \n(1) Zip \nor \n(2) Tar \nChoice: ')
     time.sleep(0.1)
     relative_path, relative_path_inner = create_directory(directory_name, archive_type)
     time.sleep(0.1)
-    duplicate_subject(file, subject_count, relative_path, relative_path_inner, archive_type)
+    duplicate_file(file, file_count, relative_path, relative_path_inner, archive_type)
     time.sleep(0.1)
     create_archive(relative_path, archive_type)
     time.sleep(0.1)
